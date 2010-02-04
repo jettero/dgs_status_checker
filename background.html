@@ -3,7 +3,7 @@
     <script language="javascript">
       function getStatus() {
         req = new XMLHttpRequest();
-        req.open("GET", "http://www.dragongoserver.net/rss/status.php?uid=5419&user=guest", true);
+        req.open("GET", "http://www.dragongoserver.net/quick_status.php", true);
         req.onload = showStatus;
         req.send(null);
       }
@@ -39,7 +39,7 @@
         }
       }
       function showStatus() {
-        var response  = req.responseXML;
+        var response  = req.responseText.split("\n");
         var games     = new Array;
 
         if (interval == null) {
@@ -48,16 +48,18 @@
           resetInterval();
         }
 
-        var title  = ((response.getElementsByTagName("title"))[1]).firstChild.data;
-        if (title != "Empty lists") {
-          var items = response.getElementsByTagName("item");
-          for (var i = 0, item; item = items[i]; i++) {
-            var ititle  = ((item.getElementsByTagName("title"))[0]).firstChild.data;
-            if (ititle != "Empty lists") {
-              games.push(ititle);
+        if( response[0].match(/^Warning.*?empty lists/) ) {
+            // #Warning: empty lists
+            // no games
+
+        } else {
+            foreach( line in response ) {
+                // 'G', 546148, 'Antzzz', 'W', '2010-02-04 12:59', 'J: 25d'
+
+                games.push(line); // should be processed into a nicer string...
             }
-          }
         }
+
         displayTooltip(games);
       }
       function resetInterval() {
